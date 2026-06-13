@@ -1,7 +1,6 @@
 # Target Tracking Toolbox
 
-MATLAB-first target tracking toolbox with a Python extension point for future
-deep-learning methods. The repository organizes single-target DBT/TBD,
+The repository organizes single-target DBT/TBD,
 multi-target RFS tracking, extended-target tracking, shared metrics,
 association utilities, visualization helpers, and learning adapters under one
 public namespace: `tracking.*`.
@@ -9,6 +8,10 @@ public namespace: `tracking.*`.
 The newly integrated multi-target RFS code is based on the
 `multiple-target-tracking-main` implementation derived from public examples by
 A. Garcia-Fernandez and related multi-target tracking literature.
+
+Validation currently means deterministic smoke tests plus small-scenario
+numerical regression for public algorithms; it does not claim paper-level curve
+reproduction.
 
 ## Quick Start
 
@@ -21,6 +24,12 @@ run('examples/matlab/demo_single_tbd.m');
 run('examples/matlab/demo_multi_phd.m');
 run('examples/matlab/demo_multi_rfs_filters.m');
 run('examples/matlab/demo_multi_filter_comparison.m');
+run('examples/matlab/demo_multi_labeled_rfs.m');
+run('examples/matlab/demo_extended_ggiw.m');
+run('examples/matlab/demo_extended_starconvex.m');
+run('examples/matlab/demo_extended_phd.m');
+run('examples/matlab/demo_extended_pmbm.m');
+run('examples/matlab/demo_extended_pmbm_smoothing.m');
 run('tests/matlab/runAllTests.m');
 ```
 
@@ -39,6 +48,7 @@ src/matlab/+tracking/
 |-- +single/+tbd                 # DP-TBD and PF-TBD
 |-- +multi/+rfs/+phd             # IMM/SIMM PHD plus GM-PHD/GM-CPHD
 |-- +multi/+rfs/+pmbm            # PMB and PMBM filters
+|-- +multi/+rfs/+labeled         # GLMB/LMB adapters
 |-- +multi/+rfs/+trajectory      # TPHD, TPMB, TPMBM, TMBM filters
 |-- +multi/+rfs/+cd              # continuous-discrete GM-PHD/GM-CPHD/PMBM
 |-- +multi/+rfs/+core            # multi-target config/result/base classes
@@ -62,19 +72,20 @@ Other important directories:
 
 ## Public MATLAB Namespace
 
-| Area | Namespace | Examples |
-| --- | --- | --- |
-| Single-target DBT | `tracking.single.dbt` | `EKF`, `UKF`, `CKF`, `ParticleFilter`, `IMM` |
-| Single-target TBD | `tracking.single.tbd` | `DpTbd`, `PfTbd` |
-| Multi-target PHD/CPHD | `tracking.multi.rfs.phd` | `ImmPhdFilter`, `SimmPhdFilter`, `GMPHD`, `GMCPHD` |
-| Multi-target PMB/PMBM | `tracking.multi.rfs.pmbm` | `PMB`, `PMBM`, `PMBMFactory` |
-| Trajectory RFS | `tracking.multi.rfs.trajectory.*` | `GMTPHD`, `TPMB`, `TPMBM`, `TMBM` |
-| Continuous-discrete RFS | `tracking.multi.rfs.cd` | `CDGMPHD`, `CDGMCPHD`, `CDPMBM` |
-| Extended target | `tracking.extended.*` | `ggiw.GgiwFilter`, `starconvex.StarConvexTracker` |
-| Metrics | `tracking.metrics` | `OspaMetric`, `GOSPA`, `TrajectoryMetric` |
-| Association | `tracking.association` | `Hungarian`, `Murty`, `Auction`, `Munkres` |
-| Models | `tracking.models` | `MeasurementModel` |
-| Learning | `tracking.learning` | `PythonModelAdapter` |
+| Area                    | Namespace                         | Examples                                           |
+| ----------------------- | --------------------------------- | -------------------------------------------------- |
+| Single-target DBT       | `tracking.single.dbt`             | `EKF`, `UKF`, `CKF`, `ParticleFilter`, `IMM`       |
+| Single-target TBD       | `tracking.single.tbd`             | `DpTbd`, `PfTbd`                                   |
+| Multi-target PHD/CPHD   | `tracking.multi.rfs.phd`          | `ImmPhdFilter`, `SimmPhdFilter`, `GMPHD`, `GMCPHD` |
+| Multi-target PMB/PMBM   | `tracking.multi.rfs.pmbm`         | `PMB`, `PMBM`, `PMBMFactory`                       |
+| Labeled RFS             | `tracking.multi.rfs.labeled.*`    | `JointGlmbGms`, `JointLmbGms`                      |
+| Trajectory RFS          | `tracking.multi.rfs.trajectory.*` | `GMTPHD`, `TPMB`, `TPMBM`, `TMBM`                  |
+| Continuous-discrete RFS | `tracking.multi.rfs.cd`           | `CDGMPHD`, `CDGMCPHD`, `CDPMBM`                    |
+| Extended target         | `tracking.extended.*`             | `GgiwFilter`, `StarConvexTracker`, `ExtendedTargetPhdFilter`, `TargetPmbmFilter` |
+| Metrics                 | `tracking.metrics`                | `OspaMetric`, `GOSPA`, `TrajectoryMetric`          |
+| Association             | `tracking.association`            | `Hungarian`, `Murty`, `Auction`, `Munkres`         |
+| Models                  | `tracking.models`                 | `MeasurementModel`                                 |
+| Learning                | `tracking.learning`               | `PythonModelAdapter`                               |
 
 ## Shared Result Contract
 
@@ -116,6 +127,15 @@ results = runAllTests();
 assertSuccess(results);
 ```
 
+Run only numerical regression tests:
+
+```matlab
+startup();
+addpath('tests/matlab/regression');
+results = runRegressionTests();
+assertSuccess(results);
+```
+
 Run Python tests:
 
 ```powershell
@@ -123,5 +143,6 @@ $env:PYTHONPATH = "python/src"
 python -m pytest tests/python
 ```
 
-See `docs/architecture.md` and `docs/migration-map.md` before adding new
-multi-target or deep-learning methods.
+See `docs/architecture.md`, `docs/migration-map.md`, and
+`docs/third-party-sources.md` before adding new multi-target or deep-learning
+methods.

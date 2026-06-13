@@ -14,3 +14,11 @@ run('examples/matlab/demo_single_dbt.m');
 run('examples/matlab/demo_single_tbd.m');
 run('examples/matlab/demo_single_maneuver.m');
 ```
+
+## Validation Level
+
+Single-target DBT, TBD and maneuvering filters are covered by deterministic
+small-scenario numerical regression with `rng(20260612)`. The checks verify
+frame counts, state dimensions, finite states, RMSE bounds and IMM probability
+normalization. These tests are engineering regressions, not paper-level curve
+reproduction.

@@ -1,0 +1,1 @@
+This work proposes a PMBM filter that uses multiple scan information for smoothing. The results of continuous tracking are smoothed and corrected at regular intervals, resulting in more accurate tracking performance. The simulation results show that the proposed algorithm can effectively reduce GOSPA errors compared to the original PMBM filter.

@@ -15,6 +15,24 @@ classdef TestPackageStructure < matlab.unittest.TestCase
             testCase.verifyEqual(exist('tracking.multi.rfs.phd.ImmPhdFilter', 'class'), 8);
             testCase.verifyEqual(exist('tracking.extended.ggiw.GgiwFilter', 'class'), 8);
             testCase.verifyEqual(exist('tracking.extended.starconvex.StarConvexTracker', 'class'), 8);
+            testCase.verifyEqual(exist('tracking.extended.phd.ExtendedTargetPhdFilter', 'class'), 8);
+        end
+
+        function testExtendedPublicClassesAreAdapters(testCase)
+            adapterClasses = {
+                'tracking.extended.ggiw.GgiwFilter'
+                'tracking.extended.starconvex.StarConvexTracker'
+                'tracking.extended.phd.ExtendedTargetPhdFilter'
+            };
+
+            for iClass = 1:numel(adapterClasses)
+                classMethods = methods(adapterClasses{iClass});
+                testCase.verifyTrue(ismember('initialize', classMethods), adapterClasses{iClass});
+                testCase.verifyTrue(ismember('predict', classMethods), adapterClasses{iClass});
+                testCase.verifyTrue(ismember('update', classMethods), adapterClasses{iClass});
+                testCase.verifyTrue(ismember('estimate', classMethods), adapterClasses{iClass});
+                testCase.verifyTrue(ismember('run', classMethods), adapterClasses{iClass});
+            end
         end
 
         function testSharedPackagesExist(testCase)

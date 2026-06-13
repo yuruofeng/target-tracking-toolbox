@@ -1,348 +1,87 @@
-%% test_all.m - 综合测试脚本
-%
-%  功能说明:
-%    对所有重构模块进行功能测试和性能测试
-%
-%  测试内容:
-%    1. tracking.extended.utils.Logger 日志类测试
-%    2. tracking.extended.utils.ConfigManager 配置管理类测试
-%    3. tracking.extended.utils.ArrayUtils 数组工具类测试
-%    4. tracking.extended.ggiw.GgiwFilter GGIW滤波器测试
-%    5. tracking.extended.starconvex.StarConvexTracker 星凸目标跟踪器测试
-%    6. tracking.extended.phd.ExtendedTargetPhdFilter 扩展目标PHD滤波器测试
-%
-%  作者: 重构版本
-%  日期: 2026-03-01
-
-%% ==================== 测试初始化 ====================
+% TEST_EXTENDED_TARGET_ALL  Integration checks for extended-target adapters.
 
 close all;
 clc;
-clear;
 
 scriptPath = fileparts(mfilename('fullpath'));
 repoRoot = fileparts(fileparts(fileparts(scriptPath)));
 addpath(genpath(fullfile(repoRoot, 'src', 'matlab')));
 
+timer = tic;
 testResults = struct();
 testResults.totalTests = 0;
 testResults.passedTests = 0;
 testResults.failedTests = 0;
 testResults.testDetails = {};
 
-totalStartTime = tic;
-
-fprintf('\n');
-fprintf('========================================\n');
-fprintf('  MATLAB 项目重构综合测试\n');
-fprintf('  测试时间: %s\n', datestr(now, 'yyyy-mm-dd HH:MM:SS'));
+fprintf('\n========================================\n');
+fprintf('  Extended-Target Adapter Integration\n');
+fprintf('  Test time: %s\n', datestr(now, 'yyyy-mm-dd HH:MM:SS'));
 fprintf('========================================\n\n');
 
-%% ==================== 测试1: Logger类 ====================
+adapterSpecs = {
+    'GgiwFilter', tracking.extended.ggiw.GgiwFilter()
+    'StarConvexTracker', tracking.extended.starconvex.StarConvexTracker()
+    'ExtendedTargetPhdFilter', tracking.extended.phd.ExtendedTargetPhdFilter()
+    'TargetPmbmFilter', tracking.extended.pmbm.TargetPmbmFilter()
+    'TrajectoryPmbmFilter', tracking.extended.pmbm.TrajectoryPmbmFilter()
+    'GgiwPmbmSmoother', tracking.extended.pmbm.smoothing.GgiwPmbmSmoother()
+};
 
-fprintf('【测试1】Logger 日志类测试...\n');
-testStartTime = tic;
+for iAdapter = 1:size(adapterSpecs, 1)
+    testStart = tic;
+    testName = adapterSpecs{iAdapter, 1};
+    try
+        result = adapterSpecs{iAdapter, 2}.run(struct('numSteps', 3, 'seed', 20260612 + iAdapter));
+        localValidateTrackingResult(result);
+        for k = 1:numel(result.estimates)
+            localValidateExtendedEstimate(result.estimates{k});
+        end
+        testResults.passedTests = testResults.passedTests + 1;
+        detail = struct('name', testName, 'status', 'passed', 'time', toc(testStart));
+        fprintf('  [passed] %s\n', testName);
+    catch exc
+        testResults.failedTests = testResults.failedTests + 1;
+        detail = struct('name', testName, 'status', 'failed', ...
+            'time', toc(testStart), 'error', exc.message);
+        fprintf('  [failed] %s: %s\n', testName, exc.message);
+    end
+    testResults.totalTests = testResults.totalTests + 1;
+    testResults.testDetails{end + 1} = detail; %#ok<SAGROW>
+end
 
+testStart = tic;
 try
-    logger = tracking.extended.utils.Logger('TestLogger', 'DEBUG');
-    
-    logger.debug('调试消息测试');
-    logger.info('信息消息测试');
-    logger.warning('警告消息测试');
-    
-    logger.logFunctionStart('testFunction');
-    pause(0.01);
-    logger.logFunctionEnd('testFunction', toc(testStartTime));
-    
-    logger.setLogLevel('ERROR');
-    assert(logger.logLevel == tracking.extended.utils.Logger.LEVEL_ERROR, ...
-        'Logger level should be ERROR');
-    
+    clutter = tracking.extended.ggiw.generateClutter(5e-6, [-200, 200, -200, 200], 3);
+    assert(numel(clutter) == 3);
+    generated = tracking.extended.ggiw.generateExtendedMeasurements([0; 0], 5, 0.99, eye(2), 3);
+    assert(numel(generated) == 3);
+    partitions = tracking.extended.phd.partitionMeasurementSet([0, 10; 0, 10], 50, 10);
+    assert(partitions.numCells >= 1);
     testResults.passedTests = testResults.passedTests + 1;
-    fprintf('  [通过] Logger类功能正常\n');
-    testDetails = struct('name', 'Logger类', 'status', '通过', ...
-        'time', toc(testStartTime));
+    detail = struct('name', 'extended helpers', 'status', 'passed', 'time', toc(testStart));
+    fprintf('  [passed] extended helpers\n');
 catch exc
     testResults.failedTests = testResults.failedTests + 1;
-    fprintf('  [失败] Logger类测试失败: %s\n', exc.message);
-    testDetails = struct('name', 'Logger类', 'status', '失败', ...
-        'time', toc(testStartTime), 'error', exc.message);
+    detail = struct('name', 'extended helpers', 'status', 'failed', ...
+        'time', toc(testStart), 'error', exc.message);
+    fprintf('  [failed] extended helpers: %s\n', exc.message);
 end
 testResults.totalTests = testResults.totalTests + 1;
-testResults.testDetails{end+1} = testDetails;
+testResults.testDetails{end + 1} = detail;
 
-%% ==================== 测试2: ConfigManager类 ====================
-
-fprintf('\n【测试2】ConfigManager 配置管理类测试...\n');
-testStartTime = tic;
-
-try
-    config = tracking.extended.utils.ConfigManager();
-    
-    config.set('test.param1', 0.99);
-    value = config.get('test.param1');
-    assert(abs(value - 0.99) < 1e-10, '参数设置/获取失败');
-    
-    defaultValue = config.get('test.nonexistent', 42);
-    assert(defaultValue == 42, '默认值获取失败');
-    
-    pD = config.get('tracking.pD', 0.99);
-    assert(pD > 0 && pD <= 1, '默认配置获取失败');
-    
-    config.reset();
-    
-    testResults.passedTests = testResults.passedTests + 1;
-    fprintf('  [通过] ConfigManager类功能正常\n');
-    testDetails = struct('name', 'ConfigManager类', 'status', '通过', ...
-        'time', toc(testStartTime));
-catch exc
-    testResults.failedTests = testResults.failedTests + 1;
-    fprintf('  [失败] ConfigManager类测试失败: %s\n', exc.message);
-    testDetails = struct('name', 'ConfigManager类', 'status', '失败', ...
-        'time', toc(testStartTime), 'error', exc.message);
-end
-testResults.totalTests = testResults.totalTests + 1;
-testResults.testDetails{end+1} = testDetails;
-
-%% ==================== 测试3: ArrayUtils类 ====================
-
-fprintf('\n【测试3】ArrayUtils 数组工具类测试...\n');
-testStartTime = tic;
-
-try
-    testVector = [1, 2, 3, 4];
-    normalized = tracking.extended.utils.ArrayUtils.normalizeVector(testVector);
-    assert(abs(sum(normalized) - 1) < 1e-10, '向量归一化失败');
-    
-    testMatrix = [1, 2; 3, 4];
-    symMatrix = tracking.extended.utils.ArrayUtils.makeSymmetric(testMatrix);
-    assert(isequal(symMatrix, 0.5 * (testMatrix + testMatrix')), ...
-        '矩阵对称化失败');
-    
-    posDefMatrix = tracking.extended.utils.ArrayUtils.ensurePositiveDefinite([1, 2; 2, 1], 1e-6);
-    eigenvalues = eig(posDefMatrix);
-    assert(all(eigenvalues > 0), '正定化失败');
-    
-    result = tracking.extended.utils.ArrayUtils.safeDivide(10, 2);
-    assert(result == 5, '安全除法失败');
-    
-    result = tracking.extended.utils.ArrayUtils.safeDivide(10, 0, -1);
-    assert(result == -1, '除零处理失败');
-    
-    testResults.passedTests = testResults.passedTests + 1;
-    fprintf('  [通过] ArrayUtils类功能正常\n');
-    testDetails = struct('name', 'ArrayUtils类', 'status', '通过', ...
-        'time', toc(testStartTime));
-catch exc
-    testResults.failedTests = testResults.failedTests + 1;
-    fprintf('  [失败] ArrayUtils类测试失败: %s\n', exc.message);
-    testDetails = struct('name', 'ArrayUtils类', 'status', '失败', ...
-        'time', toc(testStartTime), 'error', exc.message);
-end
-testResults.totalTests = testResults.totalTests + 1;
-testResults.testDetails{end+1} = testDetails;
-
-%% ==================== 测试4: GGIW滤波器 ====================
-
-fprintf('\n【测试4】GGIW GgiwFilter 滤波器测试...\n');
-testStartTime = tic;
-
-try
-    config = tracking.extended.utils.ConfigManager();
-    filter = tracking.extended.ggiw.GgiwFilter(config);
-    
-    assert(filter.numComponents == 0, '初始组件数应为0');
-    
-    F = [1, 1, 0, 0; ...
-         0, 1, 0, 0; ...
-         0, 0, 1, 1; ...
-         0, 0, 0, 1];
-    Q = diag([0.1, 0.1, 0.1, 0.1]);
-    filter.predict(F, Q);
-    
-    assert(filter.numComponents > 0, '预测后应有组件');
-    
-    testMeasurements = struct('points', {randn(2, 5) * 10});
-    H = [1, 0, 0, 0; ...
-         0, 0, 1, 0];
-    R = eye(2) * 10;
-    filter.update({testMeasurements}, H, R);
-    
-    filter.pruneAndMerge(1e-10, 4, 100);
-    
-    estimates = filter.extractStates(0.1);
-    
-    testResults.passedTests = testResults.passedTests + 1;
-    fprintf('  [通过] GgiwFilter功能正常\n');
-    testDetails = struct('name', 'GgiwFilter', 'status', '通过', ...
-        'time', toc(testStartTime));
-catch exc
-    testResults.failedTests = testResults.failedTests + 1;
-    fprintf('  [失败] GgiwFilter测试失败: %s\n', exc.message);
-    testDetails = struct('name', 'GgiwFilter', 'status', '失败', ...
-        'time', toc(testStartTime), 'error', exc.message);
-end
-testResults.totalTests = testResults.totalTests + 1;
-testResults.testDetails{end+1} = testDetails;
-
-%% ==================== 测试5: 星凸目标跟踪器 ====================
-
-fprintf('\n【测试5】StarConvexTracker 跟踪器测试...\n');
-testStartTime = tic;
-
-try
-    numFourierCoeff = 11;
-    tracker = tracking.extended.starconvex.StarConvexTracker(numFourierCoeff, 'UKF');
-    
-    initialState = [100; 100; 5; -8; zeros(numFourierCoeff, 1)];
-    initialState(5) = 100;
-    initialCov = diag([100, 100, 10, 10, ones(1, numFourierCoeff) * 0.1]);
-    
-    tracker.initialize(initialState, initialCov);
-    
-    F = blkdiag([eye(2), 10*eye(2); zeros(2,2), eye(2)], eye(numFourierCoeff));
-    Q = blkdiag(diag([10, 10, 1, 1]), diag(ones(1, numFourierCoeff) * 0.1));
-    tracker.predict(F, Q);
-    
-    measurement = [105; 102];
-    tracker.update(measurement, [0.7; 0; 0], diag([0.01, 0.1, 0.1]));
-    
-    position = tracker.getPosition();
-    assert(length(position) == 2, '位置向量维度错误');
-    
-    velocity = tracker.getVelocity();
-    assert(length(velocity) == 2, '速度向量维度错误');
-    
-    phiVector = linspace(0, 2*pi, 100);
-    shape = tracker.getShape(phiVector);
-    assert(size(shape, 1) == 2, '形状向量维度错误');
-    
-    testResults.passedTests = testResults.passedTests + 1;
-    fprintf('  [通过] StarConvexTracker功能正常\n');
-    testDetails = struct('name', 'StarConvexTracker', 'status', '通过', ...
-        'time', toc(testStartTime));
-catch exc
-    testResults.failedTests = testResults.failedTests + 1;
-    fprintf('  [失败] StarConvexTracker测试失败: %s\n', exc.message);
-    testDetails = struct('name', 'StarConvexTracker', 'status', '失败', ...
-        'time', toc(testStartTime), 'error', exc.message);
-end
-testResults.totalTests = testResults.totalTests + 1;
-testResults.testDetails{end+1} = testDetails;
-
-%% ==================== 测试6: 扩展目标PHD滤波器 ====================
-
-fprintf('\n【测试6】ExtendedTargetPhdFilter 滤波器测试...\n');
-testStartTime = tic;
-
-try
-    config = tracking.extended.utils.ConfigManager();
-    filter = tracking.extended.phd.ExtendedTargetPhdFilter(config);
-    
-    assert(filter.numComponents == 0, '初始组件数应为0');
-    
-    F = [1, 0, 1, 0; 0, 1, 0, 1; 0, 0, 1, 0; 0, 0, 0, 1];
-    Q = diag([1, 1, 0.1, 0.1]);
-    filter.predict(F, Q);
-    
-    assert(filter.numComponents > 0, '预测后应有组件');
-    
-    testCell = randn(2, 3) * 10;
-    testPartition = struct('cells', {{testCell}}, 'numCells', 1);
-    H = [1, 0, 0, 0; 0, 1, 0, 0];
-    R = eye(2) * 10;
-    filter.update({testPartition}, H, R);
-    
-    filter.pruneAndMerge(1e-10, 4, 100);
-    
-    estimates = filter.extractStates(0.1);
-    
-    testResults.passedTests = testResults.passedTests + 1;
-    fprintf('  [通过] ExtendedTargetPhdFilter功能正常\n');
-    testDetails = struct('name', 'ExtendedTargetPhdFilter', 'status', '通过', ...
-        'time', toc(testStartTime));
-catch exc
-    testResults.failedTests = testResults.failedTests + 1;
-    fprintf('  [失败] ExtendedTargetPhdFilter测试失败: %s\n', exc.message);
-    testDetails = struct('name', 'ExtendedTargetPhdFilter', 'status', '失败', ...
-        'time', toc(testStartTime), 'error', exc.message);
-end
-testResults.totalTests = testResults.totalTests + 1;
-testResults.testDetails{end+1} = testDetails;
-
-%% ==================== 测试7: 测量生成函数 ====================
-
-fprintf('\n【测试7】测量生成函数测试...\n');
-testStartTime = tic;
-
-try
-    areaBounds = [-200, 200, -200, 200];
-    clutter = tracking.extended.ggiw.generateClutter(5e-6, areaBounds, 10);
-    assert(length(clutter) == 10, '杂波生成时间步数错误');
-    
-    trueState = [0; 0; 5; 5; 0; 0];
-    measurements = tracking.extended.ggiw.generateExtendedMeasurements(trueState, 20, 0.99, ...
-        diag([100, 50]), 10);
-    assert(length(measurements) == 10, '测量生成时间步数错误');
-    
-    testResults.passedTests = testResults.passedTests + 1;
-    fprintf('  [通过] 测量生成函数功能正常\n');
-    testDetails = struct('name', '测量生成函数', 'status', '通过', ...
-        'time', toc(testStartTime));
-catch exc
-    testResults.failedTests = testResults.failedTests + 1;
-    fprintf('  [失败] 测量生成函数测试失败: %s\n', exc.message);
-    testDetails = struct('name', '测量生成函数', 'status', '失败', ...
-        'time', toc(testStartTime), 'error', exc.message);
-end
-testResults.totalTests = testResults.totalTests + 1;
-testResults.testDetails{end+1} = testDetails;
-
-%% ==================== 测试8: 划分函数 ====================
-
-fprintf('\n【测试8】测量划分函数测试...\n');
-testStartTime = tic;
-
-try
-    measurements = [0, 0, 100, 100, 50, 50; 0, 10, 100, 110, 50, 60];
-    partitions = tracking.extended.phd.partitionMeasurementSet(measurements, 50, 10);
-    
-    assert(partitions.numCells > 0, '划分单元数应大于0');
-    
-    singleMeas = [0; 0];
-    partitions = tracking.extended.phd.partitionMeasurementSet(singleMeas, 50, 10);
-    assert(partitions.numCells == 1, '单个测量应产生一个单元');
-    
-    testResults.passedTests = testResults.passedTests + 1;
-    fprintf('  [通过] 测量划分函数功能正常\n');
-    testDetails = struct('name', '测量划分函数', 'status', '通过', ...
-        'time', toc(testStartTime));
-catch exc
-    testResults.failedTests = testResults.failedTests + 1;
-    fprintf('  [失败] 测量划分函数测试失败: %s\n', exc.message);
-    testDetails = struct('name', '测量划分函数', 'status', '失败', ...
-        'time', toc(testStartTime), 'error', exc.message);
-end
-testResults.totalTests = testResults.totalTests + 1;
-testResults.testDetails{end+1} = testDetails;
-
-%% ==================== 测试结果汇总 ====================
-
-totalTestTime = toc(totalStartTime);
-
-fprintf('\n');
-fprintf('========================================\n');
-fprintf('  测试结果汇总\n');
-fprintf('========================================\n');
-fprintf('  总测试数: %d\n', testResults.totalTests);
-fprintf('  通过数: %d\n', testResults.passedTests);
-fprintf('  失败数: %d\n', testResults.failedTests);
-fprintf('  通过率: %.1f%%\n', testResults.passedTests / testResults.totalTests * 100);
-fprintf('  总耗时: %.2f 秒\n', totalTestTime);
-fprintf('========================================\n\n');
-
-testResults.totalTime = totalTestTime;
+testResults.totalTime = toc(timer);
 testResults.passRate = testResults.passedTests / testResults.totalTests * 100;
+
+fprintf('\n========================================\n');
+fprintf('  Extended Integration Summary\n');
+fprintf('========================================\n');
+fprintf('  Total: %d\n', testResults.totalTests);
+fprintf('  Passed: %d\n', testResults.passedTests);
+fprintf('  Failed: %d\n', testResults.failedTests);
+fprintf('  Pass rate: %.1f%%\n', testResults.passRate);
+fprintf('  Runtime: %.2f seconds\n', testResults.totalTime);
+fprintf('========================================\n\n');
 
 resultsDir = fullfile(repoRoot, 'results');
 if ~isfolder(resultsDir)
@@ -350,10 +89,37 @@ if ~isfolder(resultsDir)
 end
 save(fullfile(resultsDir, 'test_results.mat'), 'testResults');
 
-if testResults.failedTests == 0
-    fprintf('所有测试通过！\n');
-else
-    fprintf('存在失败的测试，请检查详细结果。\n');
+assert(testResults.failedTests == 0, 'Extended-target integration tests failed.');
+
+function localValidateTrackingResult(result)
+    requiredFields = {'metadata', 'truth', 'measurements', 'estimates', 'metrics', 'config'};
+    assert(isstruct(result), 'TrackingResult must be a struct.');
+    for iField = 1:numel(requiredFields)
+        assert(isfield(result, requiredFields{iField}), ...
+            'TrackingResult missing field: %s', requiredFields{iField});
+    end
+    assert(iscell(result.estimates), 'TrackingResult estimates must be a cell array.');
+    assert(isfield(result.metadata, 'taskType'), 'metadata.taskType missing.');
+    assert(strcmp(result.metadata.taskType, 'extended-target'), ...
+        'metadata.taskType must be extended-target.');
 end
 
-assert(testResults.failedTests == 0, 'Extended-target integration tests failed.');
+function localValidateExtendedEstimate(estimate)
+    requiredFields = {'states', 'covariances', 'labels', 'scores', 'extents', 'cardinality'};
+    assert(isstruct(estimate), 'Estimate must be a struct.');
+    for iField = 1:numel(requiredFields)
+        assert(isfield(estimate, requiredFields{iField}), ...
+            'Estimate missing field: %s', requiredFields{iField});
+    end
+    assert(all(isfinite(estimate.states(:))), 'Estimate states must be finite.');
+    assert(all(isfinite(estimate.covariances(:))), 'Estimate covariances must be finite.');
+    assert(all(isfinite(estimate.extents(:))), 'Estimate extents must be finite.');
+    assert(estimate.cardinality == size(estimate.states, 2), ...
+        'Estimate cardinality must match state count.');
+    for iExtent = 1:size(estimate.extents, 3)
+        extent = estimate.extents(:, :, iExtent);
+        assert(size(extent, 1) == size(extent, 2), 'Extent must be square.');
+        eigenvalues = eig((extent + extent') / 2);
+        assert(min(eigenvalues) >= -1e-10, 'Extent must be positive semidefinite.');
+    end
+end

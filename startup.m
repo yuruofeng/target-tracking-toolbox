@@ -10,6 +10,7 @@ function startup()
 %       tracking.single.tbd      - single-target track-before-detect methods
 %       tracking.multi.rfs.phd   - multi-target PHD/CPHD filters
 %       tracking.multi.rfs.pmbm  - multi-target PMB/PMBM filters
+%       tracking.multi.rfs.labeled - labeled RFS GLMB/LMB adapters
 %       tracking.multi.rfs.cd    - continuous-discrete RFS filters
 %       tracking.multi.rfs.trajectory - trajectory RFS filters
 %       tracking.extended        - extended-target tracking algorithms
@@ -37,9 +38,10 @@ function startup()
     fprintf('    tracking.single.tbd      TBD methods: DP-TBD, PF-TBD\n');
     fprintf('    tracking.multi.rfs.phd   Multi-target PHD and CPHD filters\n');
     fprintf('    tracking.multi.rfs.pmbm  Multi-target PMB and PMBM filters\n');
+    fprintf('    tracking.multi.rfs.labeled  Labeled RFS GLMB and LMB adapters\n');
     fprintf('    tracking.multi.rfs.cd    Continuous-discrete RFS filters\n');
     fprintf('    tracking.multi.rfs.trajectory  Trajectory PHD/PMB/PMBM/MBM filters\n');
-    fprintf('    tracking.extended        Extended-target GGIW, star-convex, PHD\n');
+    fprintf('    tracking.extended        Extended-target adapters and PMBM methods\n');
     fprintf('    tracking.metrics         OSPA and related metrics\n');
     fprintf('    tracking.association     Assignment and association utilities\n');
     fprintf('\n');
@@ -49,6 +51,12 @@ function startup()
     fprintf('    run(''examples/matlab/demo_multi_phd.m'')\n');
     fprintf('    run(''examples/matlab/demo_multi_rfs_filters.m'')\n');
     fprintf('    run(''examples/matlab/demo_multi_filter_comparison.m'')\n');
+    fprintf('    run(''examples/matlab/demo_multi_labeled_rfs.m'')\n');
+    fprintf('    run(''examples/matlab/demo_extended_ggiw.m'')\n');
+    fprintf('    run(''examples/matlab/demo_extended_starconvex.m'')\n');
+    fprintf('    run(''examples/matlab/demo_extended_phd.m'')\n');
+    fprintf('    run(''examples/matlab/demo_extended_pmbm.m'')\n');
+    fprintf('    run(''examples/matlab/demo_extended_pmbm_smoothing.m'')\n');
     fprintf('    run(''tests/matlab/runAllTests.m'')\n');
     fprintf('============================================================\n\n');
 end

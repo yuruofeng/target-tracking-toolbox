@@ -1,0 +1,7 @@
+{
+  "algorithm": "Extended-Target-PHD",
+  "taskType": "extended-target",
+  "family": "extended-phd",
+  "numSteps": 3,
+  "seed": 20260612
+}

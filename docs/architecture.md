@@ -11,9 +11,12 @@ trackers.
   live here.
 - `tracking.multi`: multi-object tracking. RFS point-target filters live under
   `tracking.multi.rfs`, including PHD/CPHD, PMB/PMBM, trajectory RFS, and
-  continuous-discrete variants.
-- `tracking.extended`: extended-target tracking, including GGIW, star-convex
-  shape tracking and extended-target PHD code.
+  continuous-discrete variants. Labeled RFS GLMB/LMB adapters live under
+  `tracking.multi.rfs.labeled`.
+- `tracking.extended`: extended-target tracking adapters, including GGIW,
+  star-convex shape tracking, extended-target PHD, and extended-target PMBM.
+  Historical engine implementations live under `tracking.extended.internal`
+  and should not be used as public APIs.
 - `tracking.core`: small shared helpers and toolbox metadata.
 - `tracking.multi.rfs.core`: multi-target RFS-specific configuration, base
   filter, and transition result classes.

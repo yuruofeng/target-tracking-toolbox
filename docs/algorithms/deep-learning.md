@@ -18,3 +18,10 @@ result = predict(sequence, config)
 This repository does not yet define a neural network architecture. Add model
 code under `python/src/target_tracking_dl/` and keep MATLAB integration code
 thin.
+
+## Validation Level
+
+Deep-learning support currently has smoke validation only: Python package import
+and the `predict(sequence, config)` TrackingResult-compatible contract. No
+neural network training, benchmark accuracy, or paper-level reproduction is
+claimed yet.

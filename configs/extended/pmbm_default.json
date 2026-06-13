@@ -1,0 +1,7 @@
+{
+  "algorithm": "Extended-Target-PMBM-Filter",
+  "taskType": "extended-target",
+  "family": "extended-pmbm",
+  "numSteps": 3,
+  "seed": 44
+}

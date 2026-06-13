@@ -9,9 +9,12 @@
 | `tbd.DpTbd` | `tracking.single.tbd.DpTbd` | Same implementation, new namespace |
 | `+phd/*` | `src/matlab/+tracking/+multi/+rfs/+phd/*` | Reclassified as multi-target RFS/PHD |
 | `phd.ImmPhdFilter` | `tracking.multi.rfs.phd.ImmPhdFilter` | Same implementation, new namespace |
-| `05-extended-target-tracking/+ggiw/*` | `src/matlab/+tracking/+extended/+ggiw/*` | Extended-target GGIW module |
-| `05-extended-target-tracking/+starconvex/*` | `src/matlab/+tracking/+extended/+starconvex/*` | Extended-target shape tracking |
-| `05-extended-target-tracking/+phd/*` | `src/matlab/+tracking/+extended/+phd/*` | Extended-target PHD module |
+| `05-extended-target-tracking/+ggiw/*` | `src/matlab/+tracking/+extended/+ggiw/*` | Public GGIW entry is now adapter-style `tracking.extended.ggiw.GgiwFilter`; original engine is internal |
+| `05-extended-target-tracking/+starconvex/*` | `src/matlab/+tracking/+extended/+starconvex/*` | Public star-convex entry is now adapter-style `tracking.extended.starconvex.StarConvexTracker`; original engine is internal |
+| `05-extended-target-tracking/+phd/*` | `src/matlab/+tracking/+extended/+phd/*` | Public extended-PHD entry is now adapter-style `tracking.extended.phd.ExtendedTargetPhdFilter`; original engine is internal |
+| `tracking.extended.ggiw.GgiwFilter` legacy native methods | `tracking.extended.internal.GgiwEngine` | Native `predict(F,Q)`, `update(measurements,H,R)`, and `extractStates()` are no longer the public API |
+| `tracking.extended.starconvex.StarConvexTracker` legacy native methods | `tracking.extended.internal.StarConvexEngine` | Native constructor and `getPosition/getVelocity/getShape` engine workflow are internal |
+| `tracking.extended.phd.ExtendedTargetPhdFilter` legacy native methods | `tracking.extended.internal.ExtendedTargetPhdEngine` | Native `predict(F,Q)`, `update(partitions,H,R)`, and `extractStates()` are internal |
 | `+utils/FilterUtils.m` | `tracking.core.FilterUtils` | Numeric filtering utilities |
 | `+utils/MeasurementModel.m` | `tracking.models.MeasurementModel` | Motion and measurement helpers |
 | `+utils/OspaMetric.m` | `tracking.metrics.OspaMetric` | Evaluation metric |

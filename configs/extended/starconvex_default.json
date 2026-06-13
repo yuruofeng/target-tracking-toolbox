@@ -1,0 +1,9 @@
+{
+  "algorithm": "Star-Convex-Tracker",
+  "taskType": "extended-target",
+  "family": "starconvex",
+  "numSteps": 3,
+  "seed": 20260612,
+  "numFourierCoeff": 11,
+  "filterType": "UKF"
+}

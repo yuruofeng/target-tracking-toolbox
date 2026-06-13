@@ -10,6 +10,7 @@ function varargout = runAllTests()
     repoRoot = fileparts(fileparts(testRoot));
     addpath(genpath(fullfile(repoRoot, 'src', 'matlab')));
     addpath(fullfile(testRoot, 'unit'));
+    addpath(fullfile(testRoot, 'regression'));
 
     testFiles = {
         fullfile(testRoot, 'unit', 'TestPackageStructure.m')
@@ -21,6 +22,11 @@ function varargout = runAllTests()
         fullfile(testRoot, 'unit', 'TestMultiPackageStructure.m')
         fullfile(testRoot, 'unit', 'TestMultiAssociationMetrics.m')
         fullfile(testRoot, 'unit', 'TestMultiRfsFilters.m')
+        fullfile(testRoot, 'unit', 'TestLabeledRfsFilters.m')
+        fullfile(testRoot, 'unit', 'TestExtendedAdapters.m')
+        fullfile(testRoot, 'unit', 'TestExtendedPmbmFilters.m')
+        fullfile(testRoot, 'unit', 'TestThirdPartySources.m')
+        fullfile(testRoot, 'regression', 'TestAlgorithmNumericalRegression.m')
     };
 
     allResults = matlab.unittest.TestResult.empty;

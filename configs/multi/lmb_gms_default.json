@@ -1,0 +1,7 @@
+{
+  "algorithm": "Joint-LMB-GMS",
+  "taskType": "multi-target",
+  "family": "labeled-rfs",
+  "numSteps": 3,
+  "seed": 43
+}

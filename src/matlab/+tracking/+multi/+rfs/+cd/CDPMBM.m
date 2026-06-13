@@ -143,6 +143,7 @@ classdef CDPMBM < tracking.multi.rfs.core.BaseFilter
             % ESTIMATE 状态估计
             
             estimates = [];
+            scores = [];
             
             for i = 1:length(obj.MBMComponent.tracks)
                 track = obj.MBMComponent.tracks{i};
@@ -158,8 +159,11 @@ classdef CDPMBM < tracking.multi.rfs.core.BaseFilter
                 
                 if bestWeight > 0.4
                     estimates = [estimates, track.hypotheses{bestHypIdx}.mean];
+                    scores = [scores, bestWeight]; %#ok<AGROW>
                 end
             end
+
+            estimates = obj.suppressDuplicateEstimates(estimates, scores);
         end
         
         function obj = prune(obj)
@@ -295,6 +299,45 @@ classdef CDPMBM < tracking.multi.rfs.core.BaseFilter
                 
                 obj.MBMComponent.tracks{i}.hypotheses = newHypotheses;
             end
+        end
+
+        function estimates = suppressDuplicateEstimates(obj, estimates, scores)
+            if isempty(estimates) || size(estimates, 2) <= 1
+                return;
+            end
+
+            threshold = 1.0;
+            if isfield(obj.Config.extraParams, 'duplicateMergeThreshold')
+                threshold = obj.Config.extraParams.duplicateMergeThreshold;
+            end
+
+            H = obj.Config.measurementModel.H;
+            if size(H, 2) == size(estimates, 1)
+                positions = H * estimates;
+            else
+                positions = estimates(1:min(2, size(estimates, 1)), :);
+            end
+
+            [~, order] = sort(scores, 'descend');
+            keep = false(1, size(estimates, 2));
+            keptPositions = zeros(size(positions, 1), 0);
+
+            for iOrder = 1:numel(order)
+                idx = order(iOrder);
+                if isempty(keptPositions)
+                    keep(idx) = true;
+                    keptPositions(:, end + 1) = positions(:, idx); %#ok<AGROW>
+                    continue;
+                end
+
+                distances = sqrt(sum((keptPositions - positions(:, idx)).^2, 1));
+                if all(distances > threshold)
+                    keep(idx) = true;
+                    keptPositions(:, end + 1) = positions(:, idx); %#ok<AGROW>
+                end
+            end
+
+            estimates = estimates(:, keep);
         end
     end
     

@@ -1,0 +1,7 @@
+{
+  "algorithm": "GGIW-PMBM-Smoother",
+  "taskType": "extended-target",
+  "family": "extended-pmbm",
+  "numSteps": 3,
+  "seed": 45
+}
