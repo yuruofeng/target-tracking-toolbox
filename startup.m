@@ -1,43 +1,54 @@
 function startup()
-% STARTUP  初始化SingleTargetTracking项目环境。
-%   此脚本将项目路径添加到MATLAB搜索路径，
-%   以便正确加载和调用各模块函数。
+% STARTUP  Initialize the Target Tracking Toolbox MATLAB environment.
 %
-%   使用方法：
-%       cd('single-target-tracking');
+%   Usage:
+%       cd('target-tracking-toolbox');
 %       startup();
 %
-%   初始化后可使用：
-%       dbt.EKF, dbt.UKF, dbt.CKF, dbt.IMM, dbt.ParticleFilter
-%       phd.ImmPhdFilter, phd.SimmPhdFilter, phd.GaussMixture
-%       tbd.DpTbd, tbd.PfTbd
-%       utils.FilterUtils, utils.MeasurementModel, utils.Hungarian, utils.OspaMetric
-%       viz.Visualizer
+%   Public packages after initialization:
+%       tracking.single.dbt      - single-target detect-before-track filters
+%       tracking.single.tbd      - single-target track-before-detect methods
+%       tracking.multi.rfs.phd   - multi-target PHD/CPHD filters
+%       tracking.multi.rfs.pmbm  - multi-target PMB/PMBM filters
+%       tracking.multi.rfs.cd    - continuous-discrete RFS filters
+%       tracking.multi.rfs.trajectory - trajectory RFS filters
+%       tracking.extended        - extended-target tracking algorithms
+%       tracking.metrics         - tracking metrics such as OSPA
+%       tracking.association     - data-association utilities
+%       tracking.models          - motion and measurement models
+%       tracking.viz             - visualization helpers
 
-    scriptPath = fileparts(mfilename('fullpath'));
-    if isempty(scriptPath)
-        scriptPath = pwd;
+    repoRoot = fileparts(mfilename('fullpath'));
+    if isempty(repoRoot)
+        repoRoot = pwd;
     end
-    
-    addpath(genpath(scriptPath));
-    
+
+    matlabRoot = fullfile(repoRoot, 'src', 'matlab');
+    addpath(genpath(matlabRoot));
+
     fprintf('\n');
-    fprintf('╔════════════════════════════════════════════════════════════╗\n');
-    fprintf('║          SingleTargetTracking v2.1.0 - 单目标跟踪工具箱          ║\n');
-    fprintf('╠════════════════════════════════════════════════════════════╣\n');
-    fprintf('║  模块:                                                      ║\n');
-    fprintf('║    +dbt/   检测后跟踪 (EKF, UKF, CKF, IMM, ParticleFilter)   ║\n');
-    fprintf('║    +phd/   PHD滤波器 (IMM-PHD, SIMM-PHD, GaussMixture)       ║\n');
-    fprintf('║    +tbd/   检测前跟踪 (DP-TBD, PF-TBD)                       ║\n');
-    fprintf('║    +utils/ 工具函数 (Hungarian, OspaMetric)                  ║\n');
-    fprintf('║    +viz/   可视化                                           ║\n');
-    fprintf('╠════════════════════════════════════════════════════════════╣\n');
-    fprintf('║  快速开始:                                                  ║\n');
-    fprintf('║    run(''demos/demoDbt.m'')      %% DBT滤波器演示            ║\n');
-    fprintf('║    run(''demos/demoPhd.m'')      %% PHD滤波器演示            ║\n');
-    fprintf('║    run(''demos/demoTbd.m'')      %% TBD算法演示             ║\n');
-    fprintf('║    run(''tests/runAllTests.m'')  %% 运行测试套件             ║\n');
-    fprintf('╚════════════════════════════════════════════════════════════╝\n');
+    fprintf('============================================================\n');
+    fprintf('  Target Tracking Toolbox v2.1.0\n');
+    fprintf('============================================================\n');
+    fprintf('  MATLAB source: %s\n', matlabRoot);
     fprintf('\n');
-    fprintf('项目路径已配置: %s\n\n', scriptPath);
+    fprintf('  Packages:\n');
+    fprintf('    tracking.single.dbt      DBT filters: EKF, UKF, CKF, IMM, PF\n');
+    fprintf('    tracking.single.tbd      TBD methods: DP-TBD, PF-TBD\n');
+    fprintf('    tracking.multi.rfs.phd   Multi-target PHD and CPHD filters\n');
+    fprintf('    tracking.multi.rfs.pmbm  Multi-target PMB and PMBM filters\n');
+    fprintf('    tracking.multi.rfs.cd    Continuous-discrete RFS filters\n');
+    fprintf('    tracking.multi.rfs.trajectory  Trajectory PHD/PMB/PMBM/MBM filters\n');
+    fprintf('    tracking.extended        Extended-target GGIW, star-convex, PHD\n');
+    fprintf('    tracking.metrics         OSPA and related metrics\n');
+    fprintf('    tracking.association     Assignment and association utilities\n');
+    fprintf('\n');
+    fprintf('  Quick start:\n');
+    fprintf('    run(''examples/matlab/demo_single_dbt.m'')\n');
+    fprintf('    run(''examples/matlab/demo_single_tbd.m'')\n');
+    fprintf('    run(''examples/matlab/demo_multi_phd.m'')\n');
+    fprintf('    run(''examples/matlab/demo_multi_rfs_filters.m'')\n');
+    fprintf('    run(''examples/matlab/demo_multi_filter_comparison.m'')\n');
+    fprintf('    run(''tests/matlab/runAllTests.m'')\n');
+    fprintf('============================================================\n\n');
 end

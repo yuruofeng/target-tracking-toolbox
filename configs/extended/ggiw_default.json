@@ -1,0 +1,6 @@
+{
+  "task_type": "extended-target",
+  "algorithm": "GGIW-PHD",
+  "detection_probability": 0.99,
+  "survival_probability": 0.99
+}

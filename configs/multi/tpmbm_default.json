@@ -1,0 +1,13 @@
+{
+  "task_type": "multi-target-rfs-trajectory-pmbm",
+  "algorithm": "TPMBM",
+  "detection_probability": 0.9,
+  "survival_probability": 0.99,
+  "clutter_rate": 0.0001,
+  "surveillance_area": [1000, 1000],
+  "gating_threshold": 20,
+  "max_global_hypotheses": 100,
+  "min_global_hypothesis_weight": 0.0001,
+  "num_minimum_assignment": 10,
+  "total_time_steps": 10
+}

@@ -1,0 +1,7 @@
+{
+  "task_type": "single-target-dbt",
+  "algorithm": "EKF",
+  "num_steps": 100,
+  "dt": 1.0,
+  "measurement_model": "bearing-range"
+}

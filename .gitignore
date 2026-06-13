@@ -24,6 +24,7 @@ sldv/
 html/
 *.cov
 test_results/
+results/*
 
 # IDE and editor files
 .vscode/
@@ -51,6 +52,13 @@ ehthumbs.db
 *.dll
 *.so
 *.dylib
+__pycache__/
+*.py[cod]
+.pytest_cache/
+python/.venv/
+python/build/
+python/dist/
+python/*.egg-info/
 
 # Documentation generated
 docs/html/

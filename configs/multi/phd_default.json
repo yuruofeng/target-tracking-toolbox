@@ -1,0 +1,6 @@
+{
+  "task_type": "multi-target-rfs-phd",
+  "algorithm": "IMM-PHD",
+  "ospa_c": 30,
+  "ospa_p": 1
+}

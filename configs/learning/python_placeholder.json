@@ -1,0 +1,6 @@
+{
+  "task_type": "learning",
+  "backend": "python",
+  "module": "target_tracking_dl",
+  "function": "predict"
+}

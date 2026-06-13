@@ -1,0 +1,7 @@
+{
+  "task_type": "single-target-tbd",
+  "algorithm": "DP-TBD",
+  "num_frames": 50,
+  "grid_size": [100, 100],
+  "snr_db": 9.5
+}

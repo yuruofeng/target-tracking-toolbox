@@ -1,0 +1,12 @@
+{
+  "task_type": "multi-target-rfs-continuous-discrete-phd",
+  "algorithm": "CDGMPHD",
+  "detection_probability": 0.9,
+  "survival_probability": 0.99,
+  "clutter_intensity": 0.0001,
+  "pruning_threshold": 0.00001,
+  "merging_threshold": 0.1,
+  "max_components": 50,
+  "motion_model": "linear_cv",
+  "measurement_model": "linear_position"
+}
